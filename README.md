@@ -1,2 +1,2 @@
 # STS-Signal
-personal trading tool
+personal tool
