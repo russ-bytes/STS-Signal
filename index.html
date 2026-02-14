@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Gold STS – Pip & Position Calculator</title>
+<style>
+/* Catppuccin Mocha Theme */
+:root {
+  --ctp-rosewater: #f5e0dc;
+  --ctp-flamingo: #f2cdcd;
+  --ctp-pink: #f5c2e7;
+  --ctp-mauve: #cba6f7;
+  --ctp-red: #f38ba8;
+  --ctp-maroon: #eba0ac;
+  --ctp-peach: #fab387;
+  --ctp-yellow: #f9e2af;
+  --ctp-green: #a6e3a1;
+  --ctp-teal: #94e2d5;
+  --ctp-sky: #89dceb;
+  --ctp-sapphire: #74c7ec;
+  --ctp-blue: #89b4fa;
+  --ctp-lavender: #b4befe;
+  --ctp-text: #cdd6f4;
+  --ctp-subtext1: #bac2de;
+  --ctp-subtext0: #a6adc8;
+  --ctp-overlay2: #9399b2;
+  --ctp-overlay1: #7f849c;
+  --ctp-overlay0: #6c7086;
+  --ctp-surface2: #585b70;
+  --ctp-surface1: #45475a;
+  --ctp-surface0: #313244;
+  --ctp-base: #1e1e2e;
+  --ctp-mantle: #181825;
+  --ctp-crust: #11111b;
+}
+
+body {
+  margin:0;
+  font-family:'Inter', Arial, sans-serif;
+  background:var(--ctp-base);
+  min-height:100vh;
+  padding:18px;
+  color:var(--ctp-text);
+}
+
+.container {
+  max-width:420px;
+  margin:auto;
+  background:var(--ctp-mantle);
+  border-radius:22px;
+  padding:22px;
+  box-shadow:0 8px 30px rgba(0,0,0,0.5);
+  border:1px solid var(--ctp-surface0);
+}
+
+h3 { 
+  text-align:center; 
+  font-size:1.45rem; 
+  font-weight:600; 
+  margin-bottom:20px; 
+  color:var(--ctp-mauve);
+  text-shadow: 0 0 20px rgba(203, 166, 247, 0.3);
+}
+
+label { 
+  font-size:0.82rem; 
+  font-weight:500; 
+  display:block; 
+  color:var(--ctp-subtext1);
+  margin-bottom:4px;
+}
+
+input, select, button {
+  width:100%;
+  padding:12px;
+  margin:6px 0 14px;
+  border-radius:12px;
+  background:var(--ctp-surface0);
+  border:2px solid var(--ctp-surface1);
+  color:var(--ctp-text);
+  font-size:1rem;
+  outline:none;
+  box-sizing:border-box;
+  transition: all 0.3s ease;
+}
+
+input:focus, select:focus {
+  border-color:var(--ctp-mauve);
+  box-shadow: 0 0 0 3px rgba(203, 166, 247, 0.1);
+}
+
+input:hover, select:hover {
+  border-color:var(--ctp-surface2);
+}
+
+button {
+  background:var(--ctp-mauve);
+  border:none;
+  color:var(--ctp-crust);
+  font-weight:700;
+  cursor:pointer;
+  margin-top:10px;
+  transition:0.3s ease;
+}
+button:hover { 
+  background:var(--ctp-lavender);
+  transform:scale(1.03); 
+  box-shadow: 0 4px 15px rgba(203, 166, 247, 0.3);
+}
+button:active { transform:scale(0.98); }
+
+.signal-box {
+  background:var(--ctp-crust);
+  padding:14px;
+  border-radius:14px;
+  margin-top:18px;
+  font-size:0.95rem;
+  white-space:pre-wrap;
+  border-left:4px solid var(--ctp-blue);
+  color:var(--ctp-text);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.plain-signal {
+  background:var(--ctp-surface0);
+  padding:14px;
+  border-radius:14px;
+  margin-top:12px;
+  font-size:0.9rem;
+  white-space:pre-wrap;
+  border-left:4px solid var(--ctp-sapphire);
+  color:var(--ctp-text);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.totals {
+  background:var(--ctp-surface0);
+  padding:14px;
+  border-radius:14px;
+  margin-top:14px;
+  font-size:0.95rem;
+  border-left:4px solid var(--ctp-green);
+  color:var(--ctp-text);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h3>Gold STS – Pip & Position Calculator</h3>
+
+<label>Trade Type</label>
+<select id="type"><option value="long">LONG (BUY)</option><option value="short">SHORT (SELL)</option></select>
+
+<label>Entry Price</label>
+<input type="number" id="entry" value="1521.784">
+
+<label>Stop Loss Price</label>
+<input type="number" id="sl" value="1521.455">
+
+<label>Take Profit Price (Custom TP)</label>
+<input type="number" id="tpInput" value="1523.170">
+
+<label>Account Balance (USD)</label>
+<input type="number" id="bal" value="987">
+
+<label>Risk Amount (USD)</label>
+<input type="number" id="risk" value="20">
+
+<button onclick="calc()">🔥 Calculate</button>
+
+<div class="signal-box" id="signal">Trade details will appear here…</div>
+<div class="plain-signal" id="plainSignal">Copy-friendly signal will appear here…</div>
+
+<div class="totals">
+  <div class="result-line"><span>Balance if SL Hit</span><span class="value" id="balSL">--</span></div>
+  <div class="result-line"><span>Balance if TP1 Hit</span><span class="value" id="balTP1">--</span></div>
+  <div class="result-line"><span>Balance if Custom TP Hit (TPc)</span><span class="value" id="balTPc">--</span></div>
+</div>
+
+<button onclick="copySignal()">📋 Copy Signal</button>
+<button onclick="exportSignal()">🧾 Export Signal</button>
+</div>
+
+<script>
+function calc() {
+  let t = document.getElementById("type").value;
+  let e = parseFloat(document.getElementById("entry").value);
+  let s = parseFloat(document.getElementById("sl").value);
+  let tpUser = parseFloat(document.getElementById("tpInput").value);
+  let b = parseFloat(document.getElementById("bal").value);
+  let r = parseFloat(document.getElementById("risk").value);
+
+  let diff = Math.abs(e - s);
+  let slPips = diff / 0.10;
+  let tpPipsActual = Math.abs(e - tpUser) / 0.10;
+  let rrActual = tpPipsActual / slPips;
+
+  let tp12 = t === "long" ? e + (diff * 2) : e - (diff * 2);
+  let tp12Pips = Math.abs(e - tp12) / 0.10;
+
+  let lot = r / (slPips * 10);
+  let pipValue = lot * 10;
+
+  let profitAtTP12 = tp12Pips * (lot * 10);
+  let profitAtCustomTP = tpPipsActual * (lot * 10);
+  let lossValueUSD = slPips * (lot * 10);
+
+  let acctpct = (r / b) * 100;
+  let marginNeeded = (lot * e) / 100;
+
+  // Main styled block output (preserved + totals appended)
+  let signalText = `💰 GOLD STS CALCULATION 💰
+📌 Trade Type: ${t.toUpperCase()}
+📍 Entry: ${e}
+🛑 Stop Loss: ${s}
+📏 SL Distance: ${slPips.toFixed(3)} pips (${(diff/0.01).toFixed(1)} points)
+🎯 TP1 (1:2 RR): ${tp12.toFixed(3)} | Distance: ${tp12Pips.toFixed(3)} pips | Profit: ~$${profitAtTP12.toFixed(2)}
+⭐ Custom TP (TPc): ${tpUser.toFixed(3)} | Distance: ${tpPipsActual.toFixed(3)} pips | Actual RR: 1:${rrActual.toFixed(2)} | Profit: ~$${profitAtCustomTP.toFixed(2)}
+💸 Estimated Loss if SL hit: ~$${lossValueUSD.toFixed(2)}
+💵 Value per Pip at Lot Size ${lot.toFixed(2)}: $${(lot * 10).toFixed(2)}
+⚙ Margin Needed (100 leverage): ~$${marginNeeded.toFixed(2)}
+📊 Account Risk: ${acctpct.toFixed(2)}%
+
+.-.-.-.-.-.-.- ACCOUNT OUTCOME TOTALS .-.-.-.-.-.-.-
+🎯 TP1 Account Total (1:2 RR Win): $${(b + profitAtTP12).toFixed(2)}
+🎯 TPc Account Total (Custom TP Win): $${(b + profitAtCustomTP).toFixed(2)}
+🛑 Account Total if SL Hit (Loss): $${(b - r).toFixed(2)}
+
+⚠ Not financial advice
+🤖 Generated by RyuD`;
+
+  // Clean copy box stays minimal as requested
+  let plainSignalText = `🔥 GOLD SIGNAL 🔥
+Entry: ${e}
+SL: ${s}
+TP: ${tpUser.toFixed(3)}
+
+⚠ This is not financial advice. Trade at your own risk.
+🚫 Not financial advice.
+🤖 Generated by RyuD`;
+
+  document.getElementById("signal").innerText = signalText;
+  document.getElementById("plainSignal").innerText = plainSignalText;
+
+  // Totals UI fields
+  document.getElementById("balSL").innerText  = "$" + (b - r).toFixed(2);
+  document.getElementById("balTP1").innerText = "$" + (b + profitAtTP12).toFixed(2);
+  document.getElementById("balTPc").innerText = "$" + (b + profitAtCustomTP).toFixed(2);
+}
+
+function copySignal() {
+  navigator.clipboard.writeText(document.getElementById("plainSignal").innerText);
+  alert("Signal copied!");
+}
+
+function exportSignal() {
+  const text = document.getElementById("plainSignal").innerText;
+  const blob = new Blob([text], {type: "text/plain"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "gold_signal.txt";
+  a.click();
+}
+</script>
+
+</body>
+</html>
